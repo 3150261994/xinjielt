@@ -1,0 +1,23 @@
+# 联通网盘GUI程序依赖
+# 安装命令: pip install -r requirements_gui.txt
+
+# 加密库
+pycryptodome==3.19.0
+
+# HTTP请求库
+requests==2.31.0
+urllib3==2.0.7
+
+# GUI相关 (通常内置)
+# tkinter - Python内置，无需安装
+
+# 打包工具
+pyinstaller==6.1.0
+
+# 其他依赖
+certifi==2023.7.22
+charset-normalizer==3.3.2
+idna==3.4
+
+# 可选：图标处理
+# Pillow==10.1.0

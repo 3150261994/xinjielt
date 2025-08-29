@@ -1,0 +1,135 @@
+name: Build Cross-Platform Apps
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        # 只安装GUI需要的核心依赖
+        pip install requests cryptography psutil
+
+    - name: Create app icon (if not exists)
+      run: |
+        if [ ! -f "app_icon.icns" ]; then
+          echo "创建默认图标..."
+          # 创建一个简单的图标文件
+          mkdir -p icon.iconset
+          # 这里可以放置图标创建逻辑，或者跳过图标
+        fi
+
+    - name: Build Mac App
+      run: |
+        pyinstaller --onefile --windowed \
+          --name "联通网盘管理器" \
+          --distpath dist \
+          --workpath build \
+          --specpath . \
+          --clean \
+          --noconfirm \
+          wopan_gui.py
+
+    - name: Verify build
+      run: |
+        ls -la dist/
+        if [ -f "dist/联通网盘管理器" ]; then
+          echo "✅ Mac应用构建成功"
+          file "dist/联通网盘管理器"
+        else
+          echo "❌ Mac应用构建失败"
+          exit 1
+        fi
+
+    - name: Create DMG (Optional)
+      run: |
+        if [ -f "dist/联通网盘管理器" ]; then
+          echo "创建DMG安装包..."
+          mkdir -p dist/dmg
+          cp "dist/联通网盘管理器" "dist/dmg/"
+
+          # 创建应用程序链接
+          ln -s /Applications "dist/dmg/Applications"
+
+          # 创建DMG
+          hdiutil create -volname "联通网盘管理器" \
+            -srcfolder "dist/dmg" \
+            -ov -format UDZO \
+            "dist/联通网盘管理器-Mac.dmg"
+
+          echo "✅ DMG创建完成"
+          ls -la dist/*.dmg
+        fi
+
+    - name: Upload Mac App
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-app
+        path: |
+          dist/联通网盘管理器
+          dist/联通网盘管理器-Mac.dmg
+        retention-days: 30
+        if-no-files-found: warn
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install requests cryptography psutil
+
+    - name: Build Windows App
+      run: |
+        pyinstaller --onefile --windowed `
+          --name "联通网盘管理器" `
+          --distpath dist `
+          --workpath build `
+          --specpath . `
+          --clean `
+          --noconfirm `
+          wopan_gui.py
+
+    - name: Verify build
+      run: |
+        dir dist\
+        if (Test-Path "dist\联通网盘管理器.exe") {
+          Write-Host "✅ Windows应用构建成功"
+        } else {
+          Write-Host "❌ Windows应用构建失败"
+          exit 1
+        }
+
+    - name: Upload Windows App
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-app
+        path: dist/联通网盘管理器.exe
+        retention-days: 30

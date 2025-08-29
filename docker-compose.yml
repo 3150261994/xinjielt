@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  wopan-service:
+    build: .
+    container_name: wopan-unified-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./tokens.json:/app/tokens.json
+      - ./logs:/app/logs
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 可选：添加Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: wopan-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - wopan-service
+    restart: unless-stopped
+
+volumes:
+  logs:

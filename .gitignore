@@ -1,0 +1,58 @@
+# 忽略大文件和测试文件
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.wmv
+*.flv
+*.webm
+
+# 忽略测试文件夹
+测试*/
+test_*/
+temp_*/
+
+# 忽略构建文件
+build/
+dist/
+*.spec
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# 忽略IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 忽略系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 忽略日志文件
+*.log
+logs/
+
+# 忽略配置文件中的敏感信息
+tokens.json
+config.json
+*.key
+*.pem
+
+# 忽略压缩文件
+*.zip
+*.rar
+*.7z
+*.tar.gz
+
+# 忽略临时文件
+*.tmp
+*.temp
+*.bak
+*.backup
