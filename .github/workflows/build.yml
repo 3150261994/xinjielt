@@ -12,6 +12,7 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false  # 不要因为一个失败就取消其他构建
       matrix:
         include:
           - os: windows-latest
@@ -23,9 +24,6 @@ jobs:
           - os: macos-14
             platform: macos
             arch: arm64
-          - os: ubuntu-latest
-            platform: linux
-            arch: x64
 
     steps:
     - uses: actions/checkout@v4
@@ -43,7 +41,9 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller build.spec
+        echo "Building for ${{ matrix.platform }}-${{ matrix.arch }}"
+        pyinstaller build.spec --clean
+        ls -la dist/
 
     - name: Create release package (Windows)
       if: matrix.platform == 'windows'
@@ -60,15 +60,21 @@ jobs:
     - name: Create release package (macOS/Linux)
       if: matrix.platform != 'windows'
       run: |
-        mkdir release
-        cp dist/WoPanWeb release/
+        mkdir -p release
+        if [ -f "dist/WoPanWeb" ]; then
+          cp dist/WoPanWeb release/
+          chmod +x release/WoPanWeb
+        else
+          echo "Error: WoPanWeb executable not found"
+          ls -la dist/
+          exit 1
+        fi
         cp README_WEB.md release/
         cp requirements.txt release/
         echo "# 联通网盘Web版 - ${{ matrix.platform }}版本" > release/README.txt
         echo "" >> release/README.txt
         echo "运行 ./WoPanWeb 启动程序" >> release/README.txt
         echo "程序会自动打开浏览器并启动Web服务" >> release/README.txt
-        chmod +x release/WoPanWeb
 
     - name: Create archive (Windows)
       if: matrix.platform == 'windows'
@@ -111,7 +117,6 @@ jobs:
           WoPanWeb-windows-x64/*.zip
           WoPanWeb-macos-x64/*.tar.gz
           WoPanWeb-macos-arm64/*.tar.gz
-          WoPanWeb-linux-x64/*.tar.gz
         draft: false
         prerelease: false
         generate_release_notes: true
