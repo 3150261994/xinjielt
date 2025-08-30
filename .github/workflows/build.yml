@@ -57,8 +57,8 @@ jobs:
         echo "Starting PyInstaller build with spec file..."
         pyinstaller build.spec --clean --log-level DEBUG
         if (-not (Test-Path "dist/WoPanWeb.exe")) {
-          echo "Spec build failed, trying simple build..."
-          python build_simple.py
+          echo "Spec build failed, trying Windows build script..."
+          python build_windows.py
         }
         echo "Build completed, checking dist directory:"
         if (Test-Path "dist") { dir dist } else { echo "dist directory not found" }
