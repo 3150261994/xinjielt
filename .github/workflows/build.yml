@@ -18,12 +18,13 @@ jobs:
           - os: windows-latest
             platform: windows
             arch: x64
-          - os: macos-latest
-            platform: macos
-            arch: x64
-          - os: macos-14
-            platform: macos
-            arch: arm64
+          # 暂时禁用macOS构建，专注于Windows版本
+          # - os: macos-latest
+          #   platform: macos
+          #   arch: x64
+          # - os: macos-14
+          #   platform: macos
+          #   arch: arm64
 
     steps:
     - uses: actions/checkout@v4
@@ -38,6 +39,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
+        echo "Python version:"
+        python --version
+        echo "Installed packages:"
+        pip list
 
     - name: Build executable
       run: |
