@@ -47,8 +47,23 @@ jobs:
     - name: Build executable
       run: |
         echo "Building for ${{ matrix.platform }}-${{ matrix.arch }}"
-        pyinstaller build.spec --clean
-        ls -la dist/
+        echo "Current directory:"
+        pwd
+        echo "Files in current directory:"
+        ls -la
+        echo "Python path:"
+        python -c "import sys; print('\n'.join(sys.path))"
+        echo "Starting PyInstaller build with spec file..."
+        pyinstaller build.spec --clean --log-level DEBUG || echo "Spec build failed, trying simple build..."
+
+        # 如果spec构建失败，尝试简单构建
+        if [ ! -f "dist/WoPanWeb.exe" ] && [ ! -f "dist/WoPanWeb" ]; then
+          echo "Trying simple build method..."
+          python build_simple.py
+        fi
+
+        echo "Build completed, checking dist directory:"
+        ls -la dist/ || echo "dist directory not found"
 
     - name: Create release package (Windows)
       if: matrix.platform == 'windows'
