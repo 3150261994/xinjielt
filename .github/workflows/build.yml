@@ -83,14 +83,14 @@ jobs:
 
     - name: Upload artifact (Windows)
       if: matrix.platform == 'windows'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}
         path: WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}.zip
 
     - name: Upload artifact (macOS/Linux)
       if: matrix.platform != 'windows'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}
         path: WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz
@@ -102,7 +102,7 @@ jobs:
     
     steps:
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       
     - name: Create Release
       uses: softprops/action-gh-release@v1
