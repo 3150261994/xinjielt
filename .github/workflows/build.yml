@@ -88,7 +88,7 @@ jobs:
     - name: Create release package (Windows)
       if: matrix.platform == 'windows'
       run: |
-        mkdir release
+        if (-not (Test-Path "release")) { mkdir release }
         copy dist\WoPanWeb.exe release\
         copy README_WEB.md release\
         copy requirements.txt release\
