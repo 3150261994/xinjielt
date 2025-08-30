@@ -1,0 +1,119 @@
+name: Build WoPan Web
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            arch: x64
+          - os: macos-latest
+            platform: macos
+            arch: x64
+          - os: macos-14
+            platform: macos
+            arch: arm64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Build executable
+      run: |
+        pyinstaller build.spec
+
+    - name: Create release package (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        mkdir release
+        copy dist\WoPanWeb.exe release\
+        copy README_WEB.md release\
+        copy requirements.txt release\
+        echo "# 联通网盘Web版 - Windows版本" > release\README.txt
+        echo "" >> release\README.txt
+        echo "双击 WoPanWeb.exe 启动程序" >> release\README.txt
+        echo "程序会自动打开浏览器并启动Web服务" >> release\README.txt
+
+    - name: Create release package (macOS/Linux)
+      if: matrix.platform != 'windows'
+      run: |
+        mkdir release
+        cp dist/WoPanWeb release/
+        cp README_WEB.md release/
+        cp requirements.txt release/
+        echo "# 联通网盘Web版 - ${{ matrix.platform }}版本" > release/README.txt
+        echo "" >> release/README.txt
+        echo "运行 ./WoPanWeb 启动程序" >> release/README.txt
+        echo "程序会自动打开浏览器并启动Web服务" >> release/README.txt
+        chmod +x release/WoPanWeb
+
+    - name: Create archive (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        Compress-Archive -Path release\* -DestinationPath WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}.zip
+
+    - name: Create archive (macOS/Linux)
+      if: matrix.platform != 'windows'
+      run: |
+        cd release
+        tar -czf ../WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz *
+
+    - name: Upload artifact (Windows)
+      if: matrix.platform == 'windows'
+      uses: actions/upload-artifact@v3
+      with:
+        name: WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}
+        path: WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}.zip
+
+    - name: Upload artifact (macOS/Linux)
+      if: matrix.platform != 'windows'
+      uses: actions/upload-artifact@v3
+      with:
+        name: WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}
+        path: WoPanWeb-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          WoPanWeb-windows-x64/*.zip
+          WoPanWeb-macos-x64/*.tar.gz
+          WoPanWeb-macos-arm64/*.tar.gz
+          WoPanWeb-linux-x64/*.tar.gz
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

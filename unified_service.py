@@ -22,8 +22,8 @@ from typing import Dict, List, Optional, Tuple
 from flask import Flask, request, jsonify, session, redirect, url_for
 from dataclasses import dataclass
 from functools import wraps
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
+from Cryptodome.Cipher import AES
+from Cryptodome.Util.Padding import pad, unpad
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

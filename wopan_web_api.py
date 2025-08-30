@@ -17,8 +17,8 @@ import random
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from flask import Flask, request, jsonify
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
+from Cryptodome.Cipher import AES
+from Cryptodome.Util.Padding import pad, unpad
 from get_download_url import WoPanDownloader
 from token_client import get_token_with_retry, report_success, report_error
 
