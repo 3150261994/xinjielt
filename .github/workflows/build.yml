@@ -44,7 +44,27 @@ jobs:
         echo "Installed packages:"
         pip list
 
-    - name: Build executable
+    - name: Build executable (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        echo "Building for ${{ matrix.platform }}-${{ matrix.arch }}"
+        echo "Current directory:"
+        pwd
+        echo "Files in current directory:"
+        dir
+        echo "Python path:"
+        python -c "import sys; print('\n'.join(sys.path))"
+        echo "Starting PyInstaller build with spec file..."
+        pyinstaller build.spec --clean --log-level DEBUG
+        if (-not (Test-Path "dist/WoPanWeb.exe")) {
+          echo "Spec build failed, trying simple build..."
+          python build_simple.py
+        }
+        echo "Build completed, checking dist directory:"
+        if (Test-Path "dist") { dir dist } else { echo "dist directory not found" }
+
+    - name: Build executable (macOS/Linux)
+      if: matrix.platform != 'windows'
       run: |
         echo "Building for ${{ matrix.platform }}-${{ matrix.arch }}"
         echo "Current directory:"

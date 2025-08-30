@@ -25,32 +25,50 @@ def build_simple():
     print("🔨 开始简单构建...")
     
     # 基本的PyInstaller命令
-    cmd = [
-        "pyinstaller",
-        "--onefile",
-        "--name=WoPanWeb",
-        "--add-data=templates;templates",
-        "--add-data=static;static", 
-        "--add-data=README_WEB.md;.",
-        "--hidden-import=flask",
-        "--hidden-import=requests",
-        "--hidden-import=Crypto.Cipher.AES",
-        "--hidden-import=Crypto.Util.Padding",
-        "--hidden-import=werkzeug",
-        "--hidden-import=jinja2",
-        "--hidden-import=markupsafe",
-        "--hidden-import=itsdangerous",
-        "--hidden-import=click",
-        "--console",
-        "--clean",
-        "main.py"
-    ]
-    
-    # Windows上使用分号，其他系统使用冒号
     if platform.system() == "Windows":
-        cmd = [c.replace(";", ";") for c in cmd]
+        # Windows使用分号作为路径分隔符
+        cmd = [
+            "pyinstaller",
+            "--onefile",
+            "--name=WoPanWeb",
+            "--add-data=templates;templates",
+            "--add-data=static;static",
+            "--add-data=README_WEB.md;.",
+            "--hidden-import=flask",
+            "--hidden-import=requests",
+            "--hidden-import=Crypto.Cipher.AES",
+            "--hidden-import=Crypto.Util.Padding",
+            "--hidden-import=werkzeug",
+            "--hidden-import=jinja2",
+            "--hidden-import=markupsafe",
+            "--hidden-import=itsdangerous",
+            "--hidden-import=click",
+            "--console",
+            "--clean",
+            "main.py"
+        ]
     else:
-        cmd = [c.replace(";", ":") for c in cmd]
+        # Unix系统使用冒号作为路径分隔符
+        cmd = [
+            "pyinstaller",
+            "--onefile",
+            "--name=WoPanWeb",
+            "--add-data=templates:templates",
+            "--add-data=static:static",
+            "--add-data=README_WEB.md:.",
+            "--hidden-import=flask",
+            "--hidden-import=requests",
+            "--hidden-import=Crypto.Cipher.AES",
+            "--hidden-import=Crypto.Util.Padding",
+            "--hidden-import=werkzeug",
+            "--hidden-import=jinja2",
+            "--hidden-import=markupsafe",
+            "--hidden-import=itsdangerous",
+            "--hidden-import=click",
+            "--console",
+            "--clean",
+            "main.py"
+        ]
     
     cmd_str = " ".join(cmd)
     return run_command(cmd_str)
