@@ -1,6 +1,12 @@
 # 联通网盘 Web 版
 
-这是联通网盘的Web版本，基于Flask框架开发，提供了友好的Web界面来管理联通网盘文件。
+[![Build Status](https://github.com/yourusername/wopan-web/workflows/Build%20WoPan%20Web/badge.svg)](https://github.com/yourusername/wopan-web/actions)
+[![Release](https://img.shields.io/github/v/release/yourusername/wopan-web)](https://github.com/yourusername/wopan-web/releases)
+[![License](https://img.shields.io/github/license/yourusername/wopan-web)](LICENSE)
+
+一个现代化的联通网盘Web界面，支持文件浏览、上传、下载等功能。基于Flask开发，提供友好的Web界面和完整的文件管理功能。
+
+![WoPan Web Screenshot](https://via.placeholder.com/800x400/0d6efd/ffffff?text=WoPan+Web+Interface)
 
 ## 功能特性
 

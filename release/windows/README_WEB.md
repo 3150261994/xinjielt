@@ -1,0 +1,152 @@
+# 联通网盘 Web 版
+
+[![Build Status](https://github.com/yourusername/wopan-web/workflows/Build%20WoPan%20Web/badge.svg)](https://github.com/yourusername/wopan-web/actions)
+[![Release](https://img.shields.io/github/v/release/yourusername/wopan-web)](https://github.com/yourusername/wopan-web/releases)
+[![License](https://img.shields.io/github/license/yourusername/wopan-web)](LICENSE)
+
+一个现代化的联通网盘Web界面，支持文件浏览、上传、下载等功能。基于Flask开发，提供友好的Web界面和完整的文件管理功能。
+
+![WoPan Web Screenshot](https://via.placeholder.com/800x400/0d6efd/ffffff?text=WoPan+Web+Interface)
+
+## 功能特性
+
+- ✅ **文件浏览**: 浏览网盘文件和文件夹
+- ✅ **文件下载**: 获取文件下载链接
+- ✅ **文件上传**: 支持单文件和多文件上传
+- ✅ **文件删除**: 删除文件和文件夹
+- ✅ **文件夹管理**: 创建新文件夹
+- ✅ **路径导航**: 面包屑导航和返回功能
+- ✅ **拖拽上传**: 支持拖拽文件到上传区域
+- ✅ **响应式设计**: 适配桌面和移动设备
+
+## 安装和运行
+
+### 方法一：使用启动脚本（推荐）
+
+1. **安装Python依赖**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **运行启动脚本**
+   ```bash
+   python start_web.py
+   ```
+   
+   启动脚本会自动：
+   - 检查依赖是否安装
+   - 启动Web服务器
+   - 自动打开浏览器
+
+### 方法二：直接运行
+
+```bash
+python wopan_web.py
+```
+
+然后在浏览器中访问：http://localhost:5000
+
+## 使用说明
+
+### 1. 连接网盘
+
+1. 在首页输入你的联通网盘 Access Token
+2. 点击"连接"按钮
+3. 连接成功后会显示根目录的文件列表
+
+### 2. 文件浏览
+
+- 双击文件夹可以进入
+- 点击"返回"按钮回到上级目录
+- 使用面包屑导航快速跳转
+
+### 3. 文件上传
+
+- **方法一**: 点击上传区域的"选择文件"按钮
+- **方法二**: 直接拖拽文件到上传区域
+- 支持同时上传多个文件
+- 上传过程中会显示进度
+
+### 4. 文件下载
+
+1. 点击文件行的"选择"按钮
+2. 在右侧文件信息面板点击"获取下载链接"
+3. 在弹出的对话框中可以复制链接或直接在浏览器中打开
+
+### 5. 文件管理
+
+- **删除文件**: 选择文件后点击"删除"按钮
+- **创建文件夹**: 点击"新建文件夹"按钮，输入文件夹名称
+
+## 技术架构
+
+### 后端技术栈
+- **Flask**: Web框架
+- **Requests**: HTTP请求库
+- **PyCryptodome**: 加密解密库
+- **Werkzeug**: WSGI工具库
+
+### 前端技术栈
+- **Bootstrap 5**: UI框架
+- **Bootstrap Icons**: 图标库
+- **原生JavaScript**: 交互逻辑
+
+### 文件结构
+```
+├── wopan_web.py          # Flask主应用
+├── start_web.py          # 启动脚本
+├── requirements.txt      # Python依赖
+├── templates/
+│   └── index.html       # 主页模板
+├── static/
+│   └── js/
+│       └── app.js       # 前端JavaScript
+└── uploads/             # 临时上传目录
+```
+
+## API接口
+
+Web版本提供以下REST API接口：
+
+- `POST /api/connect` - 连接网盘
+- `GET /api/browse/<folder_id>` - 浏览文件夹
+- `GET /api/download/<fid>` - 获取下载链接
+- `POST /api/upload` - 上传文件
+- `POST /api/delete` - 删除文件
+- `POST /api/create_folder` - 创建文件夹
+
+## 注意事项
+
+1. **Token安全**: 请妥善保管你的Access Token，不要泄露给他人
+2. **文件大小**: 上传文件大小限制为16GB
+3. **网络环境**: 确保网络连接稳定，上传大文件时建议使用有线网络
+4. **浏览器兼容**: 推荐使用Chrome、Firefox、Edge等现代浏览器
+
+## 故障排除
+
+### 连接失败
+- 检查Token是否正确
+- 确认网络连接正常
+- 检查防火墙设置
+
+### 上传失败
+- 检查文件大小是否超限
+- 确认网络连接稳定
+- 检查磁盘空间是否充足
+
+### 页面无法访问
+- 确认服务器已启动
+- 检查端口5000是否被占用
+- 尝试使用127.0.0.1:5000访问
+
+## 开发说明
+
+如需二次开发，可以：
+
+1. 修改`wopan_web.py`添加新的API接口
+2. 修改`templates/index.html`调整页面布局
+3. 修改`static/js/app.js`添加新的前端功能
+
+## 许可证
+
+本项目仅供学习和个人使用，请遵守联通网盘的服务条款。
