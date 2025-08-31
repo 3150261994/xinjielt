@@ -1,0 +1,142 @@
+name: Build macOS Version
+
+on:
+  push:
+    tags:
+      - 'macos-v*'
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Verify files
+      run: |
+        echo "Checking required files..."
+        ls -la
+        echo "Checking wopan_web.py:"
+        head -10 wopan_web.py
+        echo "Checking templates directory:"
+        ls -la templates/
+        echo "Checking static directory:"
+        ls -la static/
+
+    - name: Build macOS executable
+      run: |
+        echo "Building macOS version..."
+        pyinstaller \
+          --onefile \
+          --name=WoPanWeb \
+          --add-data="templates:templates" \
+          --add-data="static:static" \
+          --add-data="README_WEB.md:." \
+          --hidden-import=flask \
+          --hidden-import=requests \
+          --hidden-import=Crypto.Cipher.AES \
+          --hidden-import=Crypto.Util.Padding \
+          --hidden-import=werkzeug \
+          --hidden-import=jinja2 \
+          --hidden-import=markupsafe \
+          --hidden-import=itsdangerous \
+          --hidden-import=click \
+          --hidden-import=socket \
+          --hidden-import=webbrowser \
+          --hidden-import=threading \
+          --hidden-import=time \
+          --hidden-import=uuid \
+          --hidden-import=tempfile \
+          --hidden-import=shutil \
+          --hidden-import=hashlib \
+          --hidden-import=random \
+          --hidden-import=base64 \
+          --hidden-import=json \
+          --hidden-import=os \
+          --hidden-import=sys \
+          --console \
+          --clean \
+          main.py
+
+    - name: Verify build
+      run: |
+        echo "Build completed, checking dist directory:"
+        ls -la dist/
+        echo "Testing executable:"
+        ./dist/WoPanWeb --help || echo "Executable created successfully"
+
+    - name: Create release package
+      run: |
+        mkdir -p release
+        cp dist/WoPanWeb release/
+        cp README_WEB.md release/
+        cp requirements.txt release/
+        echo "# 联通网盘Web版 - macOS版本" > release/README.txt
+        echo "" >> release/README.txt
+        echo "运行方法:" >> release/README.txt
+        echo "1. 打开终端" >> release/README.txt
+        echo "2. 进入程序目录" >> release/README.txt
+        echo "3. 运行: ./WoPanWeb" >> release/README.txt
+        echo "4. 程序会自动打开浏览器" >> release/README.txt
+        echo "" >> release/README.txt
+        echo "如果遇到权限问题，请运行: chmod +x WoPanWeb" >> release/README.txt
+
+    - name: Create archive
+      run: |
+        cd release
+        tar -czf ../WoPanWeb-macos-x64.tar.gz *
+        cd ..
+        ls -la WoPanWeb-macos-x64.tar.gz
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: WoPanWeb-macos-x64
+        path: WoPanWeb-macos-x64.tar.gz
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: WoPanWeb-macos-x64.tar.gz
+        name: 联通网盘Web版 macOS ${{ github.ref_name }}
+        body: |
+          # 联通网盘Web版 - macOS版本
+          
+          ## 下载说明
+          - **macOS Intel/Apple Silicon**: `WoPanWeb-macos-x64.tar.gz`
+          
+          ## 使用方法
+          1. 下载并解压 `WoPanWeb-macos-x64.tar.gz`
+          2. 打开终端，进入解压后的目录
+          3. 运行权限设置: `chmod +x WoPanWeb`
+          4. 启动程序: `./WoPanWeb`
+          5. 程序会自动打开浏览器
+          
+          ## 功能特性
+          - 🌐 现代化Web界面
+          - 📁 文件浏览和管理
+          - ⬆️ 多种上传方式
+          - ⬇️ 获取下载链接
+          - 🎵 生成播放列表
+          
+          ## 注意事项
+          - 首次运行可能需要在系统偏好设置中允许运行
+          - 如遇到安全提示，请在"安全性与隐私"中点击"仍要打开"
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
