@@ -735,9 +735,24 @@ class WoPanWeb {
             return;
         }
 
+        // 自动填入当前路径
+        const currentPath = this.getCurrentFolderPath();
+        document.getElementById('folderPathInput').value = currentPath;
+
         this.displayVideoFilesList(videoFiles);
         const modal = new bootstrap.Modal(document.getElementById('playlistModal'));
         modal.show();
+    }
+
+    getCurrentFolderPath() {
+        // 从面包屑导航获取当前路径
+        if (this.currentPath === '根目录') {
+            return '';
+        }
+
+        // 将路径转换为适合播放器的格式
+        // 例如：根目录/2025S3z/9-nine -> 2025S3z/9-nine
+        return this.currentPath.replace('根目录/', '').replace('根目录', '');
     }
 
     getVideoFiles() {
@@ -816,10 +831,6 @@ class WoPanWeb {
         }
 
         const folderPath = document.getElementById('folderPathInput').value.trim();
-        if (!folderPath) {
-            this.showAlert('请输入文件夹路径', 'warning');
-            return;
-        }
 
         const selectedFiles = [];
         checkboxes.forEach(checkbox => {
