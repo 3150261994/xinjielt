@@ -68,7 +68,8 @@ class WoPanWeb {
         document.getElementById('selectAllVideosBtn').addEventListener('click', () => this.selectAllVideos());
         document.getElementById('clearAllVideosBtn').addEventListener('click', () => this.clearAllVideos());
         document.getElementById('generatePlaylistConfirmBtn').addEventListener('click', () => this.generatePlaylist());
-        document.getElementById('copyPlaylistBtn').addEventListener('click', () => this.copyPlaylist());
+        document.getElementById('copyOriginalBtn').addEventListener('click', () => this.copyOriginalPlaylist());
+        document.getElementById('copyEncodedBtn').addEventListener('click', () => this.copyEncodedPlaylist());
 
         // 下载模态框按钮
         document.getElementById('copyLinkBtn').addEventListener('click', () => this.copyDownloadLink());
@@ -831,6 +832,7 @@ class WoPanWeb {
         }
 
         const folderPath = document.getElementById('folderPathInput').value.trim();
+        const urlEncode = document.getElementById('urlEncodeCheckbox').checked;
 
         const selectedFiles = [];
         checkboxes.forEach(checkbox => {
@@ -848,14 +850,15 @@ class WoPanWeb {
                 },
                 body: JSON.stringify({
                     file_ids: selectedFiles,
-                    folder_path: folderPath
+                    folder_path: folderPath,
+                    url_encode: urlEncode
                 })
             });
 
             const result = await response.json();
 
             if (result.success) {
-                this.showPlaylistResult(result);
+                this.showPlaylistResult(result, urlEncode);
                 this.updateStatus(`播放列表生成成功: ${result.success_count}/${result.total_files}`);
 
                 // 关闭选择模态框
@@ -871,8 +874,17 @@ class WoPanWeb {
         }
     }
 
-    showPlaylistResult(result) {
+    showPlaylistResult(result, hasEncoded) {
+        // 显示原始播放列表
         document.getElementById('playlistResult').value = result.playlist;
+
+        // 如果有编码版本，显示编码标签页和内容
+        if (hasEncoded && result.playlist_encoded) {
+            document.getElementById('playlistResultEncoded').value = result.playlist_encoded;
+            document.getElementById('encoded-tab-item').style.display = 'block';
+        } else {
+            document.getElementById('encoded-tab-item').style.display = 'none';
+        }
 
         let statsHtml = `
             <div class="alert alert-success">
@@ -892,17 +904,34 @@ class WoPanWeb {
             `;
         }
 
+        // 如果有编码版本，添加说明
+        if (hasEncoded && result.playlist_encoded) {
+            statsHtml += `
+                <div class="alert alert-info">
+                    <strong>URL编码说明:</strong>
+                    编码版本适用于包含中文或特殊字符的路径，可以避免播放器解析问题。
+                </div>
+            `;
+        }
+
         document.getElementById('playlistStats').innerHTML = statsHtml;
 
         const modal = new bootstrap.Modal(document.getElementById('playlistResultModal'));
         modal.show();
     }
 
-    copyPlaylist() {
+    copyOriginalPlaylist() {
         const playlistText = document.getElementById('playlistResult');
         playlistText.select();
         document.execCommand('copy');
-        this.showAlert('播放列表已复制到剪贴板', 'success');
+        this.showAlert('原始播放列表已复制到剪贴板', 'success');
+    }
+
+    copyEncodedPlaylist() {
+        const playlistText = document.getElementById('playlistResultEncoded');
+        playlistText.select();
+        document.execCommand('copy');
+        this.showAlert('URL编码播放列表已复制到剪贴板', 'success');
     }
 
     updatePathBreadcrumb() {

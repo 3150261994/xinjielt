@@ -826,12 +826,14 @@ def generate_playlist():
     data = request.get_json()
     file_ids = data.get('file_ids', [])
     folder_path = data.get('folder_path', '')  # 获取文件夹路径
+    url_encode = data.get('url_encode', False)  # 是否URL编码
 
     if not file_ids:
         return jsonify({'success': False, 'message': '请选择文件'})
 
     try:
         playlist = []
+        playlist_encoded = []
         failed_files = []
 
         for i, file_id in enumerate(file_ids):
@@ -846,22 +848,34 @@ def generate_playlist():
                 else:
                     file_path = file_name
 
-                # 生成播放列表格式
+                # 生成播放列表格式（原始）
                 playlist_item = f"第{episode_num:02d}集${file_path}"
                 playlist.append(playlist_item)
+
+                # 生成URL编码版本
+                if url_encode:
+                    from urllib.parse import quote
+                    encoded_path = quote(file_path, safe='/')
+                    playlist_item_encoded = f"第{episode_num:02d}集${encoded_path}"
+                    playlist_encoded.append(playlist_item_encoded)
 
             except Exception as e:
                 failed_files.append(f"{file_id['name']} (错误: {str(e)})")
 
         if playlist:
-            playlist_text = '\n'.join(playlist)
-            return jsonify({
+            result = {
                 'success': True,
-                'playlist': playlist_text,
+                'playlist': '\n'.join(playlist),
                 'total_files': len(file_ids),
                 'success_count': len(playlist),
                 'failed_files': failed_files
-            })
+            }
+
+            # 如果需要URL编码，也返回编码版本
+            if url_encode and playlist_encoded:
+                result['playlist_encoded'] = '\n'.join(playlist_encoded)
+
+            return jsonify(result)
         else:
             return jsonify({
                 'success': False,

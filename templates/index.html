@@ -335,6 +335,14 @@
                             <i class="bi bi-x-circle"></i> 清空
                         </button>
                     </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="urlEncodeCheckbox">
+                            <label class="form-check-label" for="urlEncodeCheckbox">
+                                URL编码路径 <small class="text-muted">(适用于包含中文或特殊字符的路径)</small>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
@@ -357,18 +365,47 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">生成的播放列表:</label>
-                        <textarea class="form-control" id="playlistResult" rows="15" readonly></textarea>
+                    <!-- 标签页导航 -->
+                    <ul class="nav nav-tabs" id="playlistTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="original-tab" data-bs-toggle="tab" data-bs-target="#original-pane" type="button" role="tab">
+                                原始路径
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation" id="encoded-tab-item" style="display: none;">
+                            <button class="nav-link" id="encoded-tab" data-bs-toggle="tab" data-bs-target="#encoded-pane" type="button" role="tab">
+                                URL编码路径
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- 标签页内容 -->
+                    <div class="tab-content mt-3" id="playlistTabContent">
+                        <div class="tab-pane fade show active" id="original-pane" role="tabpanel">
+                            <div class="mb-3">
+                                <label class="form-label">原始播放列表:</label>
+                                <textarea class="form-control" id="playlistResult" rows="12" readonly></textarea>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="copyOriginalBtn">
+                                <i class="bi bi-clipboard"></i> 复制原始列表
+                            </button>
+                        </div>
+                        <div class="tab-pane fade" id="encoded-pane" role="tabpanel">
+                            <div class="mb-3">
+                                <label class="form-label">URL编码播放列表:</label>
+                                <textarea class="form-control" id="playlistResultEncoded" rows="12" readonly></textarea>
+                            </div>
+                            <button type="button" class="btn btn-outline-success btn-sm" id="copyEncodedBtn">
+                                <i class="bi bi-clipboard"></i> 复制编码列表
+                            </button>
+                        </div>
                     </div>
-                    <div id="playlistStats" class="mb-3">
+
+                    <div id="playlistStats" class="mt-3">
                         <!-- 统计信息将在这里显示 -->
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="copyPlaylistBtn">
-                        <i class="bi bi-clipboard"></i> 复制列表
-                    </button>
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">关闭</button>
                 </div>
             </div>
