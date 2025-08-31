@@ -177,43 +177,43 @@ jobs:
         name: 联通网盘Web版 ${{ github.ref_name }}
         body: |
           # 联通网盘Web版 - 跨平台发布
-          
+
           ## 📦 下载说明
           - **Windows 64位**: `WoPanWeb-windows-x64.zip`
           - **macOS Intel/Apple Silicon**: `WoPanWeb-macos-x64.tar.gz`
-          
+
           ## 🚀 使用方法
-          
+
           ### Windows用户
           1. 下载并解压 `WoPanWeb-windows-x64.zip`
           2. 双击运行 `WoPanWeb.exe`
           3. 程序会自动打开浏览器
-          
+
           ### macOS用户
           1. 下载并解压 `WoPanWeb-macos-x64.tar.gz`
           2. 打开终端，进入解压目录
           3. 运行: `chmod +x WoPanWeb && ./WoPanWeb`
           4. 程序会自动打开浏览器
-          
-          ## ✨ 功能特性
+
+          ## ✨ 新功能特性
           - 🌐 现代化Web界面
           - 📁 文件浏览和管理
           - ⬆️ 多种上传方式（单文件、多文件、文件夹、拖拽）
           - ⬇️ 一键获取下载链接
           - 🗂️ 创建/删除文件夹
-          - 🎵 生成播放列表（第XX集$路径/文件名.mp4格式）
-          
+          - 🎵 生成播放列表（支持URL编码）
+          - 🔗 URL编码路径（解决中文路径问题）
+
           ## 🔑 Token获取
           1. 登录 [联通网盘网页版](https://pan.wo.cn)
           2. 打开浏览器开发者工具 (F12)
           3. 在网络请求中找到包含 `Accesstoken` 的请求头
           4. 复制Token值使用
-          
+
           ## ⚠️ 注意事项
           - 首次运行可能需要几秒钟启动时间
           - Windows用户请允许防火墙访问
           - macOS用户首次运行可能需要在系统偏好设置中允许
         draft: false
         prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}

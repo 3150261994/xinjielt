@@ -1,0 +1,98 @@
+name: Build Simple Release
+
+on:
+  push:
+    tags:
+      - 'simple-v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Build Windows executable
+      run: |
+        echo "Building Windows version..."
+        pyinstaller --onefile --name=WoPanWeb --add-data="templates;templates" --add-data="static;static" --add-data="README_WEB.md;." --hidden-import=flask --hidden-import=requests --hidden-import=Crypto.Cipher.AES --hidden-import=Crypto.Util.Padding --hidden-import=werkzeug --hidden-import=jinja2 --hidden-import=markupsafe --hidden-import=itsdangerous --hidden-import=click --console --clean main.py
+
+    - name: Verify build
+      run: |
+        echo "Build completed, checking dist directory:"
+        dir dist
+
+    - name: Create release package
+      run: |
+        mkdir release-temp
+        copy dist\WoPanWeb.exe release-temp\
+        copy README_WEB.md release-temp\
+        echo "# 联通网盘Web版 - Windows版本" > release-temp\README.txt
+        echo "" >> release-temp\README.txt
+        echo "使用方法:" >> release-temp\README.txt
+        echo "1. 双击 WoPanWeb.exe 启动程序" >> release-temp\README.txt
+        echo "2. 程序会自动打开浏览器" >> release-temp\README.txt
+        echo "3. 输入Token开始使用" >> release-temp\README.txt
+        
+        # 创建ZIP包
+        Compress-Archive -Path release-temp\* -DestinationPath WoPanWeb-windows-x64.zip
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-build
+        path: WoPanWeb-windows-x64.zip
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: WoPanWeb-windows-x64.zip
+        name: 联通网盘Web版 ${{ github.ref_name }}
+        body: |
+          # 联通网盘Web版 - Windows版本
+          
+          ## 📦 下载
+          - **Windows 64位**: `WoPanWeb-windows-x64.zip`
+          
+          ## 🚀 使用方法
+          1. 下载并解压 `WoPanWeb-windows-x64.zip`
+          2. 双击运行 `WoPanWeb.exe`
+          3. 程序会自动打开浏览器
+          4. 输入联通网盘Token开始使用
+          
+          ## ✨ 功能特性
+          - 🌐 现代化Web界面
+          - 📁 文件浏览和管理
+          - ⬆️ 多种上传方式（单文件、多文件、文件夹、拖拽）
+          - ⬇️ 一键获取下载链接
+          - 🗂️ 创建/删除文件夹
+          - 🎵 生成播放列表（支持URL编码）
+          - 🔗 URL编码路径（解决中文路径问题）
+          
+          ## 🔑 Token获取方法
+          1. 登录 [联通网盘网页版](https://pan.wo.cn)
+          2. 打开浏览器开发者工具 (F12)
+          3. 在网络请求中找到包含 `Accesstoken` 的请求头
+          4. 复制Token值到程序中使用
+          
+          ## ⚠️ 注意事项
+          - 首次运行可能需要几秒钟启动时间
+          - 请允许防火墙访问网络
+          - Token请妥善保管，不要泄露
+        draft: false
+        prerelease: false
+        token: ${{ secrets.GITHUB_TOKEN }}
