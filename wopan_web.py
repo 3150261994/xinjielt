@@ -816,6 +816,84 @@ def create_folder():
     except Exception as e:
         return jsonify({'success': False, 'message': f'创建异常: {str(e)}'})
 
+@app.route('/api/generate_playlist', methods=['POST'])
+def generate_playlist():
+    """生成播放列表"""
+    api = get_api_instance()
+    if not api:
+        return jsonify({'success': False, 'message': '请先连接API'})
+
+    data = request.get_json()
+    file_ids = data.get('file_ids', [])
+    folder_path = data.get('folder_path', '')  # 获取文件夹路径
+
+    if not file_ids:
+        return jsonify({'success': False, 'message': '请选择文件'})
+
+    try:
+        playlist = []
+        failed_files = []
+
+        for i, file_id in enumerate(file_ids):
+            try:
+                # 提取文件名中的集数信息
+                file_name = file_id['name']
+                episode_num = extract_episode_number(file_name, i + 1)
+
+                # 生成文件路径格式：folder_path/filename
+                if folder_path:
+                    file_path = f"{folder_path}/{file_name}"
+                else:
+                    file_path = file_name
+
+                # 生成播放列表格式
+                playlist_item = f"第{episode_num:02d}集${file_path}"
+                playlist.append(playlist_item)
+
+            except Exception as e:
+                failed_files.append(f"{file_id['name']} (错误: {str(e)})")
+
+        if playlist:
+            playlist_text = '\n'.join(playlist)
+            return jsonify({
+                'success': True,
+                'playlist': playlist_text,
+                'total_files': len(file_ids),
+                'success_count': len(playlist),
+                'failed_files': failed_files
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': '没有成功生成任何播放项目',
+                'failed_files': failed_files
+            })
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'生成播放列表异常: {str(e)}'})
+
+def extract_episode_number(filename, default_num):
+    """从文件名中提取集数"""
+    import re
+
+    # 尝试匹配各种集数格式
+    patterns = [
+        r'第?(\d+)[集话期]',  # 第01集, 第1集, 01集, 1话
+        r'[Ee][Pp]?(\d+)',   # EP01, E01, ep01
+        r'(\d+)\.mp4',       # 01.mp4
+        r'(\d+)\.mkv',       # 01.mkv
+        r'(\d+)\.avi',       # 01.avi
+        r'[^\d](\d+)[^\d]',  # 任何被非数字包围的数字
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, filename, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+
+    # 如果都没匹配到，使用默认编号
+    return default_num
+
 if __name__ == '__main__':
     print("🚀 启动联通网盘Web服务...")
     print("📡 访问地址: http://localhost:5000")

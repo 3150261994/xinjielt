@@ -63,6 +63,13 @@ class WoPanWeb {
             if (e.key === 'Enter') this.createFolder();
         });
 
+        // 播放列表生成按钮
+        document.getElementById('generatePlaylistBtn').addEventListener('click', () => this.showPlaylistModal());
+        document.getElementById('selectAllVideosBtn').addEventListener('click', () => this.selectAllVideos());
+        document.getElementById('clearAllVideosBtn').addEventListener('click', () => this.clearAllVideos());
+        document.getElementById('generatePlaylistConfirmBtn').addEventListener('click', () => this.generatePlaylist());
+        document.getElementById('copyPlaylistBtn').addEventListener('click', () => this.copyPlaylist());
+
         // 下载模态框按钮
         document.getElementById('copyLinkBtn').addEventListener('click', () => this.copyDownloadLink());
         document.getElementById('openLinkBtn').addEventListener('click', () => this.openDownloadLink());
@@ -717,6 +724,174 @@ class WoPanWeb {
             this.showAlert('创建异常: ' + error.message, 'danger');
             this.updateStatus('创建异常: ' + error.message);
         }
+    }
+
+    showPlaylistModal() {
+        // 获取当前文件夹中的视频文件
+        const videoFiles = this.getVideoFiles();
+
+        if (videoFiles.length === 0) {
+            this.showAlert('当前文件夹中没有视频文件', 'warning');
+            return;
+        }
+
+        this.displayVideoFilesList(videoFiles);
+        const modal = new bootstrap.Modal(document.getElementById('playlistModal'));
+        modal.show();
+    }
+
+    getVideoFiles() {
+        // 从当前显示的文件列表中筛选视频文件
+        const videoExtensions = ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v', '.3gp', '.ts', '.m3u8'];
+        const fileRows = document.querySelectorAll('#fileList tr');
+        const videoFiles = [];
+
+        fileRows.forEach(row => {
+            const isFolder = row.dataset.isFolder === 'true';
+            if (!isFolder) {
+                const fileName = row.dataset.fileName;
+                const fileExt = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+
+                if (videoExtensions.includes(fileExt)) {
+                    videoFiles.push({
+                        fid: row.dataset.fid,
+                        id: row.dataset.id,
+                        name: fileName
+                    });
+                }
+            }
+        });
+
+        // 按文件名排序
+        videoFiles.sort((a, b) => a.name.localeCompare(b.name));
+        return videoFiles;
+    }
+
+    displayVideoFilesList(videoFiles) {
+        const container = document.getElementById('videoFilesList');
+        container.innerHTML = '';
+
+        if (videoFiles.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center">没有找到视频文件</p>';
+            return;
+        }
+
+        videoFiles.forEach((file, index) => {
+            const div = document.createElement('div');
+            div.className = 'form-check mb-2';
+            div.innerHTML = `
+                <input class="form-check-input video-file-checkbox" type="checkbox" value="${index}" id="video_${index}">
+                <label class="form-check-label" for="video_${index}">
+                    <i class="bi bi-play-circle text-primary me-2"></i>
+                    ${file.name}
+                </label>
+            `;
+            container.appendChild(div);
+        });
+
+        // 存储视频文件列表供后续使用
+        this.currentVideoFiles = videoFiles;
+    }
+
+    selectAllVideos() {
+        const checkboxes = document.querySelectorAll('.video-file-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    }
+
+    clearAllVideos() {
+        const checkboxes = document.querySelectorAll('.video-file-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+
+    async generatePlaylist() {
+        const checkboxes = document.querySelectorAll('.video-file-checkbox:checked');
+
+        if (checkboxes.length === 0) {
+            this.showAlert('请选择至少一个视频文件', 'warning');
+            return;
+        }
+
+        const folderPath = document.getElementById('folderPathInput').value.trim();
+        if (!folderPath) {
+            this.showAlert('请输入文件夹路径', 'warning');
+            return;
+        }
+
+        const selectedFiles = [];
+        checkboxes.forEach(checkbox => {
+            const index = parseInt(checkbox.value);
+            selectedFiles.push(this.currentVideoFiles[index]);
+        });
+
+        this.updateStatus(`正在生成播放列表，共 ${selectedFiles.length} 个文件...`);
+
+        try {
+            const response = await fetch('/api/generate_playlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    file_ids: selectedFiles,
+                    folder_path: folderPath
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showPlaylistResult(result);
+                this.updateStatus(`播放列表生成成功: ${result.success_count}/${result.total_files}`);
+
+                // 关闭选择模态框
+                const selectModal = bootstrap.Modal.getInstance(document.getElementById('playlistModal'));
+                selectModal.hide();
+            } else {
+                this.showAlert(result.message, 'danger');
+                this.updateStatus('播放列表生成失败: ' + result.message);
+            }
+        } catch (error) {
+            this.showAlert('生成播放列表异常: ' + error.message, 'danger');
+            this.updateStatus('生成播放列表异常: ' + error.message);
+        }
+    }
+
+    showPlaylistResult(result) {
+        document.getElementById('playlistResult').value = result.playlist;
+
+        let statsHtml = `
+            <div class="alert alert-success">
+                <strong>生成成功!</strong>
+                共处理 ${result.total_files} 个文件，成功生成 ${result.success_count} 个播放链接
+            </div>
+        `;
+
+        if (result.failed_files && result.failed_files.length > 0) {
+            statsHtml += `
+                <div class="alert alert-warning">
+                    <strong>部分文件处理失败:</strong>
+                    <ul class="mb-0 mt-2">
+                        ${result.failed_files.map(file => `<li>${file}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        document.getElementById('playlistStats').innerHTML = statsHtml;
+
+        const modal = new bootstrap.Modal(document.getElementById('playlistResultModal'));
+        modal.show();
+    }
+
+    copyPlaylist() {
+        const playlistText = document.getElementById('playlistResult');
+        playlistText.select();
+        document.execCommand('copy');
+        this.showAlert('播放列表已复制到剪贴板', 'success');
     }
 
     updatePathBreadcrumb() {

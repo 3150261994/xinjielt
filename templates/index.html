@@ -226,8 +226,11 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <button class="btn btn-outline-primary w-100" id="createFolderBtn">
+                        <button class="btn btn-outline-primary w-100 mb-2" id="createFolderBtn">
                             <i class="bi bi-folder-plus"></i> 新建文件夹
+                        </button>
+                        <button class="btn btn-outline-success w-100" id="generatePlaylistBtn">
+                            <i class="bi bi-play-circle"></i> 生成播放列表
                         </button>
                     </div>
                 </div>
@@ -297,6 +300,76 @@
                     <button type="button" class="btn btn-primary" id="confirmCreateFolderBtn">
                         <i class="bi bi-folder-plus"></i> 创建
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 播放列表模态框 -->
+    <div class="modal fade" id="playlistModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-play-circle"></i> 生成播放列表
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="folderPathInput" class="form-label">文件夹路径:</label>
+                        <input type="text" class="form-control" id="folderPathInput" placeholder="例如: 2025S3z/9-nine">
+                        <small class="text-muted">输入视频文件的存储路径，用于生成播放列表</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">选择视频文件:</label>
+                        <div id="videoFilesList" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            <!-- 视频文件列表将在这里显示 -->
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="selectAllVideosBtn">
+                            <i class="bi bi-check-all"></i> 全选
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="clearAllVideosBtn">
+                            <i class="bi bi-x-circle"></i> 清空
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-success" id="generatePlaylistConfirmBtn">
+                        <i class="bi bi-play-circle"></i> 生成播放列表
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 播放列表结果模态框 -->
+    <div class="modal fade" id="playlistResultModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-list-check"></i> 播放列表
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">生成的播放列表:</label>
+                        <textarea class="form-control" id="playlistResult" rows="15" readonly></textarea>
+                    </div>
+                    <div id="playlistStats" class="mb-3">
+                        <!-- 统计信息将在这里显示 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="copyPlaylistBtn">
+                        <i class="bi bi-clipboard"></i> 复制列表
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">关闭</button>
                 </div>
             </div>
         </div>
