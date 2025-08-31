@@ -66,13 +66,13 @@ jobs:
     - name: Build executable (Windows)
       if: matrix.platform == 'windows'
       run: |
-        echo "Building Windows version..."
-        pyinstaller --onefile --name=WoPanWeb --add-data="templates;templates" --add-data="static;static" --add-data="README_WEB.md;." --hidden-import=flask --hidden-import=requests --hidden-import=Crypto.Cipher.AES --hidden-import=Crypto.Util.Padding --hidden-import=werkzeug --hidden-import=jinja2 --hidden-import=markupsafe --hidden-import=itsdangerous --hidden-import=click --hidden-import=socket --hidden-import=webbrowser --hidden-import=threading --hidden-import=time --hidden-import=uuid --hidden-import=tempfile --hidden-import=shutil --hidden-import=hashlib --hidden-import=random --hidden-import=base64 --hidden-import=json --hidden-import=os --hidden-import=sys --console --clean main.py
+        echo "Building Windows version from wopan_web.py..."
+        pyinstaller --onefile --name=WoPanWeb --add-data="templates;templates" --add-data="static;static" --add-data="README_WEB.md;." --hidden-import=flask --hidden-import=requests --hidden-import=Crypto.Cipher.AES --hidden-import=Crypto.Util.Padding --hidden-import=werkzeug --hidden-import=jinja2 --hidden-import=markupsafe --hidden-import=itsdangerous --hidden-import=click --hidden-import=socket --hidden-import=webbrowser --hidden-import=threading --hidden-import=time --hidden-import=uuid --hidden-import=tempfile --hidden-import=shutil --hidden-import=hashlib --hidden-import=random --hidden-import=base64 --hidden-import=json --hidden-import=os --hidden-import=sys --console --clean wopan_web.py
 
     - name: Build executable (macOS)
       if: matrix.platform == 'macos'
       run: |
-        echo "Building macOS version..."
+        echo "Building macOS version from wopan_web.py..."
         pyinstaller \
           --onefile \
           --name=WoPanWeb \
@@ -103,7 +103,7 @@ jobs:
           --hidden-import=sys \
           --console \
           --clean \
-          main.py
+          wopan_web.py
 
     - name: Verify build
       run: |

@@ -27,8 +27,8 @@ jobs:
 
     - name: Build Windows executable
       run: |
-        echo "Building Windows version..."
-        pyinstaller --onefile --name=WoPanWeb --add-data="templates;templates" --add-data="static;static" --add-data="README_WEB.md;." --hidden-import=flask --hidden-import=requests --hidden-import=Crypto.Cipher.AES --hidden-import=Crypto.Util.Padding --hidden-import=werkzeug --hidden-import=jinja2 --hidden-import=markupsafe --hidden-import=itsdangerous --hidden-import=click --console --clean main.py
+        echo "Building Windows version from wopan_web.py..."
+        pyinstaller --onefile --name=WoPanWeb --add-data="templates;templates" --add-data="static;static" --add-data="README_WEB.md;." --hidden-import=flask --hidden-import=requests --hidden-import=Crypto.Cipher.AES --hidden-import=Crypto.Util.Padding --hidden-import=werkzeug --hidden-import=jinja2 --hidden-import=markupsafe --hidden-import=itsdangerous --hidden-import=click --console --clean wopan_web.py
 
     - name: Verify build
       run: |
