@@ -1,0 +1,219 @@
+name: Build All Platforms
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            arch: x64
+            executable_name: WoPanWeb.exe
+            package_name: WoPanWeb-windows-x64.zip
+          - os: macos-latest
+            platform: macos
+            arch: x64
+            executable_name: WoPanWeb
+            package_name: WoPanWeb-macos-x64.tar.gz
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Verify files (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        echo "Checking required files..."
+        dir
+        echo "Checking wopan_web.py:"
+        type wopan_web.py | findstr /n "^" | findstr /c:"1:" /c:"2:" /c:"3:" /c:"4:" /c:"5:"
+        echo "Checking templates directory:"
+        dir templates
+        echo "Checking static directory:"
+        dir static
+
+    - name: Verify files (macOS)
+      if: matrix.platform == 'macos'
+      run: |
+        echo "Checking required files..."
+        ls -la
+        echo "Checking wopan_web.py:"
+        head -5 wopan_web.py
+        echo "Checking templates directory:"
+        ls -la templates/
+        echo "Checking static directory:"
+        ls -la static/
+
+    - name: Build executable (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        echo "Building Windows version..."
+        pyinstaller --onefile --name=WoPanWeb --add-data="templates;templates" --add-data="static;static" --add-data="README_WEB.md;." --hidden-import=flask --hidden-import=requests --hidden-import=Crypto.Cipher.AES --hidden-import=Crypto.Util.Padding --hidden-import=werkzeug --hidden-import=jinja2 --hidden-import=markupsafe --hidden-import=itsdangerous --hidden-import=click --hidden-import=socket --hidden-import=webbrowser --hidden-import=threading --hidden-import=time --hidden-import=uuid --hidden-import=tempfile --hidden-import=shutil --hidden-import=hashlib --hidden-import=random --hidden-import=base64 --hidden-import=json --hidden-import=os --hidden-import=sys --console --clean main.py
+
+    - name: Build executable (macOS)
+      if: matrix.platform == 'macos'
+      run: |
+        echo "Building macOS version..."
+        pyinstaller \
+          --onefile \
+          --name=WoPanWeb \
+          --add-data="templates:templates" \
+          --add-data="static:static" \
+          --add-data="README_WEB.md:." \
+          --hidden-import=flask \
+          --hidden-import=requests \
+          --hidden-import=Crypto.Cipher.AES \
+          --hidden-import=Crypto.Util.Padding \
+          --hidden-import=werkzeug \
+          --hidden-import=jinja2 \
+          --hidden-import=markupsafe \
+          --hidden-import=itsdangerous \
+          --hidden-import=click \
+          --hidden-import=socket \
+          --hidden-import=webbrowser \
+          --hidden-import=threading \
+          --hidden-import=time \
+          --hidden-import=uuid \
+          --hidden-import=tempfile \
+          --hidden-import=shutil \
+          --hidden-import=hashlib \
+          --hidden-import=random \
+          --hidden-import=base64 \
+          --hidden-import=json \
+          --hidden-import=os \
+          --hidden-import=sys \
+          --console \
+          --clean \
+          main.py
+
+    - name: Verify build
+      run: |
+        echo "Build completed, checking dist directory:"
+        ls -la dist/ || dir dist
+
+    - name: Create release package (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        if (-not (Test-Path "release")) { mkdir release }
+        copy dist\WoPanWeb.exe release\
+        copy README_WEB.md release\
+        copy requirements.txt release\
+        echo "# 联通网盘Web版 - Windows版本" > release\README.txt
+        echo "" >> release\README.txt
+        echo "使用方法:" >> release\README.txt
+        echo "1. 双击 WoPanWeb.exe 启动程序" >> release\README.txt
+        echo "2. 程序会自动打开浏览器" >> release\README.txt
+        echo "3. 输入Token开始使用" >> release\README.txt
+        echo "" >> release\README.txt
+        echo "功能特性:" >> release\README.txt
+        echo "- 文件浏览和管理" >> release\README.txt
+        echo "- 多种上传方式" >> release\README.txt
+        echo "- 获取下载链接" >> release\README.txt
+        echo "- 生成播放列表" >> release\README.txt
+        
+        # 创建ZIP包
+        Compress-Archive -Path release\* -DestinationPath ${{ matrix.package_name }}
+
+    - name: Create release package (macOS)
+      if: matrix.platform == 'macos'
+      run: |
+        mkdir -p release
+        cp dist/WoPanWeb release/
+        cp README_WEB.md release/
+        cp requirements.txt release/
+        echo "# 联通网盘Web版 - macOS版本" > release/README.txt
+        echo "" >> release/README.txt
+        echo "使用方法:" >> release/README.txt
+        echo "1. 打开终端，进入程序目录" >> release/README.txt
+        echo "2. 设置权限: chmod +x WoPanWeb" >> release/README.txt
+        echo "3. 运行程序: ./WoPanWeb" >> release/README.txt
+        echo "4. 程序会自动打开浏览器" >> release/README.txt
+        echo "" >> release/README.txt
+        echo "功能特性:" >> release/README.txt
+        echo "- 文件浏览和管理" >> release/README.txt
+        echo "- 多种上传方式" >> release/README.txt
+        echo "- 获取下载链接" >> release/README.txt
+        echo "- 生成播放列表" >> release/README.txt
+        echo "" >> release/README.txt
+        echo "注意事项:" >> release/README.txt
+        echo "- 首次运行可能需要在系统偏好设置中允许" >> release/README.txt
+        echo "- 如遇安全提示，请在'安全性与隐私'中点击'仍要打开'" >> release/README.txt
+        
+        # 创建TAR.GZ包
+        cd release
+        tar -czf ../${{ matrix.package_name }} *
+        cd ..
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.platform }}-build
+        path: ${{ matrix.package_name }}
+
+    - name: Upload to Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ matrix.package_name }}
+        name: 联通网盘Web版 ${{ github.ref_name }}
+        body: |
+          # 联通网盘Web版 - 跨平台发布
+          
+          ## 📦 下载说明
+          - **Windows 64位**: `WoPanWeb-windows-x64.zip`
+          - **macOS Intel/Apple Silicon**: `WoPanWeb-macos-x64.tar.gz`
+          
+          ## 🚀 使用方法
+          
+          ### Windows用户
+          1. 下载并解压 `WoPanWeb-windows-x64.zip`
+          2. 双击运行 `WoPanWeb.exe`
+          3. 程序会自动打开浏览器
+          
+          ### macOS用户
+          1. 下载并解压 `WoPanWeb-macos-x64.tar.gz`
+          2. 打开终端，进入解压目录
+          3. 运行: `chmod +x WoPanWeb && ./WoPanWeb`
+          4. 程序会自动打开浏览器
+          
+          ## ✨ 功能特性
+          - 🌐 现代化Web界面
+          - 📁 文件浏览和管理
+          - ⬆️ 多种上传方式（单文件、多文件、文件夹、拖拽）
+          - ⬇️ 一键获取下载链接
+          - 🗂️ 创建/删除文件夹
+          - 🎵 生成播放列表（第XX集$路径/文件名.mp4格式）
+          
+          ## 🔑 Token获取
+          1. 登录 [联通网盘网页版](https://pan.wo.cn)
+          2. 打开浏览器开发者工具 (F12)
+          3. 在网络请求中找到包含 `Accesstoken` 的请求头
+          4. 复制Token值使用
+          
+          ## ⚠️ 注意事项
+          - 首次运行可能需要几秒钟启动时间
+          - Windows用户请允许防火墙访问
+          - macOS用户首次运行可能需要在系统偏好设置中允许
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
